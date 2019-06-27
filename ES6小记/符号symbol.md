@@ -1,5 +1,3 @@
-
-
 ## 符号（symbol）与符号属性
 
 在符号诞生之前，将字符串作为属性名称导致属性可以被轻易访问，无论命名规则如何。
@@ -185,15 +183,3 @@ Array.prototype[Symbol.unscopables] = Object.assign(Object.create(null), {
     values: true
 });
 ```
-
-
-
-
-
-
-
-
-
-
-
-
