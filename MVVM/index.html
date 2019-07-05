@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <div id="app">
+        <div>{{message.greet}}</div>
+        <input type="text" bee-model='message.greet'></br></br></br>
+        <span>
+            {{message.tip}}
+        </span></br>
+        <input type="text" bee-model='message.greet'></br>
+        {{message.tip}}</br>
+        {{message.tip}}
+    </div>
+<script src="mvvm.js"></script>
+<script>
+var vm = new MVVM({
+    el:'#app',
+    data:{
+        message:{
+            greet: 'hello everyone!~',
+            tip: 'good job!~'
+        }
+    }
+})
+
+</script>
+</body>
+</html>
