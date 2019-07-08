@@ -1,3 +1,60 @@
+#原型
+- Div->HtmlDivElement->Element->Node->EventTarget
+
+#函数的三种角色
+1. 函数
+2. 对象
+3. 所有函数都是Function的实例，Object是所有对象的原型
+```js
+function Fn(){
+    this.x = 100
+}
+Fn.prototype.getX = function(){
+    console.log(this.x)
+}
+var f = new Fn;
+// 函数本身也会有一些自己的属性
+// length:0 形参个数
+// name 函数名
+// prototype  类的原型，在原型上定义的方法都是当前Fn这个类实例的公有方法
+// __proto__  把函数当作一个普通的对象,指向Function这个类的原型
+
+// 函数有多种角色：
+// 1. 普通函数： 函数执行的时候就会产生一个私有的作用域，栈内存。 形参赋值 预解释 代码逐行执行  闭包 内存释放问题
+// 2. 构造函数(类): new 实例  实力！！ 构造函数中的this是当前实例 return问题
+// 3. 任何一个函数都是Function这个类的一个实例，那么任何一个函数实例都可以调用(__proto__)定义在Function这个类原型上的所有属性和方法
+```
+### Call方法
+- call方法是定义在Function.prototype的方法。任何一个函数我们都可以认为它是Function这个类的一个实例。通过实例的__proto__属性找到所属类的原型。任何一个函数都可以调用call和apply等方法 eg: Object.prototype.toString.call(); 强制改变this关键字的 
+- 函数实例找到call方法执行，call的执行过程中把调用call方法这个函数实例中的this都改变成call的第一个参数。接下来再把调用call方法的这个实例函数执行
+```js
+function fn() { //是Function这个类一个实例
+    console.log(this); //obj
+}
+//fn(); //?? this==>window
+var obj = {
+    fn: fn
+}
+//obj.fn();//this ==> obj
+//fn.call(obj); 
+// 1 找到call方法并且运行  2 在运行之前把调用call方法的fn这个函数中的this都修改成call的参数，也就是obj  3 执行fn
+
+Function.prototype.myCall = function (obj) {
+    //1. 把这个函数体内的this都改成obj这个参数
+    // eval 中函数作为字符串被定义需要“（”和“）”作为前缀和后缀
+    // eval('('+this.toString().replace('this','obj')+')')
+    //2. 执行fn就是this执行
+    this()
+}
+function fn1(){console.log(1)}
+function fn2(){console.log(2)}
+fn1.call.call(fn2)  //2
+// fn1.call和fn1.call.call代表的事同一个方法，然后call方法中的this替换成了fn2
+
+Function.prototype.call(fn1);//执行的是空函数
+
+```
+
 # 正则作用:
 - 正则：用来处理字符串的规则
 - 匹配：判断一个字符串是否符合我们制定的规则
