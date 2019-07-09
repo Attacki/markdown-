@@ -24,7 +24,7 @@ var f = new Fn;
 // 2. 构造函数(类): new 实例  实力！！ 构造函数中的this是当前实例 return问题
 // 3. 任何一个函数都是Function这个类的一个实例，那么任何一个函数实例都可以调用(__proto__)定义在Function这个类原型上的所有属性和方法
 ```
-### Call方法
+### call方法
 - call方法是定义在Function.prototype的方法。任何一个函数我们都可以认为它是Function这个类的一个实例。通过实例的__proto__属性找到所属类的原型。任何一个函数都可以调用call和apply等方法 eg: Object.prototype.toString.call(); 强制改变this关键字的 
 - 函数实例找到call方法执行，call的执行过程中把调用call方法这个函数实例中的this都改变成call的第一个参数。接下来再把调用call方法的这个实例函数执行
 ```js
@@ -52,8 +52,136 @@ fn1.call.call(fn2)  //2
 // fn1.call和fn1.call.call代表的事同一个方法，然后call方法中的this替换成了fn2
 
 Function.prototype.call(fn1);//执行的是空函数
+```
+### apply方法
+> apply : 它跟call的用法是一样一样的。就是传参数的方式不相同而已call是把从第二个参数开始一个一个传给调用call的函数主体同样也是相当于把数组中的每一项分别传给调用apply这个方法的函数实例
+```js
+// 借用Math.max/Math.min ->apply在传递值的时候需要把传递的那些值,放在一个数组中，但是也相当于在一个个的给传递值
+var ary = [12, 23, 14, 25, 13, 16];
+var max = Math.max.apply(null, ary);
+var min = Math.min.apply(null, ary);
+console.log(max, min);//->25 12
+```
+
+### bind方法
+```js
+// 绑定 bind: 同样也是用来改变this关键字的, 但是仅仅改变了this
+var sum = function (a,b){return a+b}
+var temp = sum.bind(null, 100, 200);  //预处理 中间量  假设 标识变量
+temp()
+var obj = {name : 'zx'}
+var temp = sum.bind(obj); //仅仅是改变了this，但是并没有执行 temp已经是被改变了this的函数
+temp(100,200); //当我们需要的时候才执行呢
+```
+
+### 变量声明时需要注意的点
+```js
+// 声明的min变成全局的了
+function fn() {
+    var max = min = ary[0];
+}
+fn();
+//console.log(max);//->Uncaught ReferenceError: max is not defined
+console.log(min);//->12 min不是私有的变量,而是全局的
+```
+
+### 函数的arguments参数
+```js
+//->arguments:函数天生自带的用来接收参数值的一个集合(类数组集合->它不是数组),它是一个对象数据类型的值
+//->arguments.length 传递进来参数的个数(集合长度)
+//->arguments.callee 当前函数本身
+//->arguments.callee.caller 存储的是当前函数在那个函数下执行的
+//->arguments.callee/arguments.callee.caller在JS严格模式下是不允许使用的,一但使用就会报错
+
+//->Uncaught TypeError: arguments.sort is not a function
+//    arguments.sort(function (a, b) {
+//        return a - b;
+//    });
+//->sort是数组的方法,定义在Array.prototype上,只有Array的一个实例数组才能使用这个方法(不仅sort是这样,我们之前学的那15个方法都这样)
+//->console.log(arguments instanceof Array); ->false
+```
+
+### 数组的sort方法深入
+```js
+//->我们把一个匿名函数当做值传递给sort,匿名函数在方法中被执行了很多次
+//->每一次执行匿名函数,都有两个形参a/b
+//a:数组中的当前项
+//b:当前项的后一项
+//->return的不一定非要a-b,我只需要返回一个>0/<=0的值即可,返回的是一个>0的值,当前项和后一项b交换位置,返回的是一个<=0的值,位置不变
+var ary = [12, 13, 14, 23, 14, 25];
+ary.sort(function (a, b) {
+    return 1;//->不管a/b谁大,每一次都交换位置
+});
+console.log(ary);
+```
+
+### AJAX的简单写法
+```js
+var xhr = new XMLHttpRequest(); //创建一个请求对象 g
+xhr.open('get','data.txt',false); //打开这个请求对象 param1: 请求方式get & post param2：请求接口就是你到哪去拿数据(后端同学提供)  param3: 同步还是异步 true = async  false 同步
+xhr.onreadystatechange = function (){ //实时监听请求状态，当请求成功或者失败的时候，都会发生状态的改变。并且返回相应状态码，我们通过判断状态码的值就知道是否请求成功。如果请求成功要做相应得对数据的处理。
+    if(xhr.readyState == 4 && xhr.status == 200){ //请求成功
+        res =utils.jsonParse(xhr.responseText); //相当于添加了一个全局的。用来动态数据的
+    }
+}
+xhr.send(null); //发送请求
+```
+
+### DOM映射
+
+- DOM映射机制:
+    > JS中获取的元素/元素集合 和 页面中的元素标签/容器 是紧紧的绑定在一起的,其中一个改变,另外一个也会跟着改变
+- DOM性能优化的深入机制:
+    > `回流`：页面中的结构发生改变(增加、删除、元素的位置变了...)浏览器需要把整个页面的HTML机构重新的进行计算 ->非常的消耗性能,JS优化技巧之一,尽量减少DOM的回流  
+    > `重绘`：页面中元素的某个样式(背景颜色...)发生改变,浏览器只需要把当前的元素重新的渲染一遍即可  
+    > `文档碎片`：临时创建一个容器,把每一次动态创建的li先存储正在这个容器中,最后在统一的把容器增加到页面中(既不影响原来的,也可以只引发一次回流)
+```js
+var oUl = document.getElementById("ul1");
+var oLis = oUl.getElementsByTagName("li");//->把#ul1下子子孙孙级别的li都获取到了
+
+// oLis = document.querySelectorAll("#ul1>li");//->获取#ul1下所有子元素中的li
+// document.querySelectorAll("div[index=2]");
+// oLis[0]是集合中的第一个元素对象,它和页面中的第一个LI是映射关系
+// oUl.appendChild(oLis[0]);//->并没有往末尾新增加元素,而是把之前的第一个li位置进行了改变,第一个li现在处于末尾的位置
+// context.querySelector()/querySelectorAll() (获取的节点集合不存在DOM映射 是静态的 )
 
 ```
+
+### 类数组转换数组及JSON转化
+```js
+var utils = {
+    listToArray : function (similarArray){
+        var a = [];
+        try{
+            a = Array.prototype.slice.call(similarArray);
+        }catch (e){
+            alert(); //ie7 和 8 弹出
+            var a = [];
+            for(var i=0; i<similarArray.length; i++){
+                a[a.length] = similarArray[i];
+            }
+        }
+        return a;
+    },
+    jsonParse: function (jsonStr){
+        return 'JSON' in window ? JSON.parse(jsonStr) : eval("(" + jsonStr+")");
+    }
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # 正则作用:
 - 正则：用来处理字符串的规则
