@@ -83,6 +83,20 @@ function fn() {
 fn();
 //console.log(max);//->Uncaught ReferenceError: max is not defined
 console.log(min);//->12 min不是私有的变量,而是全局的
+
+```
+
+### 括号表达式
+```js
+//一个小的括号中有多项内容,中间用逗号隔开,但是我们获取到的只有多项中的最后一项
+(function(){
+    console.log(1);
+},
+function(){
+    console.log(2);
+})();//->2
+
+(1,obj.fn)();//this->window 我们其实是把obj.fn对应的函数克隆一份一模一样的拿过来执行的 (1,obj.fn)() -> 把xxxfff000克隆一份xxxfff111,然后让xxxfff111()
 ```
 
 ### 函数的arguments参数
@@ -100,6 +114,33 @@ console.log(min);//->12 min不是私有的变量,而是全局的
 //->sort是数组的方法,定义在Array.prototype上,只有Array的一个实例数组才能使用这个方法(不仅sort是这样,我们之前学的那15个方法都这样)
 //->console.log(arguments instanceof Array); ->false
 ```
+
+### 柯理化函数思想
+- 柯理化函数思想:一个JS预先处理的思想->利用函数执行可以形成一个不销毁的私有作用域的原理,把需要预先处理的内容都存在这个不销毁的作用域中,并且返回一个小函数,以后我们执行的都是小函数,在小函数中把之前预先存储的值进行相关的操作处理即可
+```js
+Function.prototype.myBind = function myBind(context) {
+    //this->fn
+    var _this = this;
+    var outerArg = Array.prototype.slice.call(arguments, 1);
+    //->兼容
+    if ("bind" in Function.prototype) {
+        return this.bind.apply(this, [context].concat(outerArg));
+    }
+    //->不兼容
+    return function () {
+        var innerArg = Array.prototype.slice.call(arguments, 0);
+        innerArg.length === 0 ? innerArg[innerArg.length] = window.event : null;
+        _this.apply(context, outerArg.concat(innerArg));
+    }
+};
+
+var obj = {name: "珠峰培训"};
+function fn(num1, num2, e) {
+    console.log(this, num1, num2, e);
+}
+document.body.onclick = fn.myBind(obj, 100, 200);
+```
+
 
 ### 数组的sort方法深入
 ```js
@@ -168,19 +209,6 @@ var utils = {
     }
 }
 ```
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 # 正则作用:
