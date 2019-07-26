@@ -40,14 +40,23 @@ document.body.onclick = function (e) {
 
 //3、DOM零级事件绑定只能控制我们的方法在“事件的冒泡传播阶段”发生(把对应的方法执行)
 
-//4、事件传播的整套机制:捕获阶段->冒泡阶段(捕获阶段->目标阶段->冒泡阶段)
 ```
+### 事件的传播机制
+- 捕获阶段(第一阶段)当某个行为触发时，首先从外向内依次查找对应的html元素，在查找的过程中，把当前这些元素在捕获阶段绑定的方法执行
+- DOM2级事件绑定既可以往冒泡阶段绑定，也可以往捕获阶段绑定
+	1. center.addEventListener("click",function(){},false) //把当前方法绑定在了"冒泡阶段"
+	2. center.addEventListener("click",function(){},true) //把当前方法绑定在了"捕获阶段"
+- 我们可以阻止时间的冒泡传播，但是阻止不了它的捕获传播
+- 冒泡阶段(第二阶段) 当元素的某一个行为触发的时候,首先进行捕获阶段,捕获完成后在执行冒泡阶段从内向外,把当前这些元素在冒泡阶段绑定的方法依次执行. center.onclick=function(){} 这个方法其实就是绑定在"冒泡阶段的方法"
+- 通过dom零级时间绑定的所有方法都是绑定在了"冒泡阶段"
+
+
 
 
 ### 事件绑定
 - 事件绑定:给行为绑定了一个方法,当行为触发的时候执行对应的方法
-  1. DOM零级事件绑定(onxxx=function...)、DOM二级事件绑定(在元素对象原型链上的EventTarget这个类就是DOM二级事件绑定的类,在EventTarget.prototype上提供了addEventListener/removeEventListener就是DOM二级事件绑定/移除事件绑定的方法)
-  2. 单从性能角度来说,我们的DOM0级事件绑定要优于DOM2级事件绑定(零级找的都是自己的私有的属性，而二级是通过原型一级级的查找才找到的)
+    1. DOM零级事件绑定(onxxx=function...)、DOM二级事件绑定(在元素对象原型链上的EventTarget这个类就是DOM二级事件绑定的类,在EventTarget.prototype上提供了addEventListener/removeEventListener就是DOM二级事件绑定/移除事件绑定的方法)
+    2. 单从性能角度来说,我们的DOM0级事件绑定要优于DOM2级事件绑定(零级找的都是自己的私有的属性，而二级是通过原型一级级的查找才找到的)
 
 
 ### 事件对象
