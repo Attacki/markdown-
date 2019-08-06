@@ -171,7 +171,7 @@ xhr.send(null); //发送请求
 ### DOM映射
 
 - DOM映射机制:
-    > JS中获取的元素/元素集合 和 页面中的元素标签/容器 是紧紧的绑定在一起的,其中一个改变,另外一个也会跟着改变
+    > JS中获取的元素/元素集合 和 页面中的元素 标签/容器 是紧紧的绑定在一起的,其中一个改变,另外一个也会跟着改变
 - DOM性能优化的深入机制:
     > `回流`：页面中的结构发生改变(增加、删除、元素的位置变了...)浏览器需要把整个页面的HTML机构重新的进行计算 ->非常的消耗性能,JS优化技巧之一,尽量减少DOM的回流  
     > `重绘`：页面中元素的某个样式(背景颜色...)发生改变,浏览器只需要把当前的元素重新的渲染一遍即可  
@@ -180,11 +180,11 @@ xhr.send(null); //发送请求
 var oUl = document.getElementById("ul1");
 var oLis = oUl.getElementsByTagName("li");//->把#ul1下子子孙孙级别的li都获取到了
 
-// oLis = document.querySelectorAll("#ul1>li");//->获取#ul1下所有子元素中的li
-// document.querySelectorAll("div[index=2]");
+oLis = document.querySelectorAll("#ul1>li");//->获取#ul1下所有子元素中的li
+document.querySelectorAll("div[index=2]");
 // oLis[0]是集合中的第一个元素对象,它和页面中的第一个LI是映射关系
-// oUl.appendChild(oLis[0]);//->并没有往末尾新增加元素,而是把之前的第一个li位置进行了改变,第一个li现在处于末尾的位置
-// context.querySelector()/querySelectorAll() (获取的节点集合不存在DOM映射 是静态的 )
+oUl.appendChild(oLis[0]);//->并没有往末尾新增加元素,而是把之前的第一个li位置进行了改变,第一个li现在处于末尾的位置
+context.querySelector()/querySelectorAll() (获取的节点集合不存在DOM映射 是静态的 )
 
 ```
 

@@ -9,6 +9,7 @@
         <div class="input-group" :class="paytype==4?'checked':''" >
             <input v-model='input_val' @keyup="keyup" @focus="consoleInput('可传参数')" >
         </div>
+        <div class="b-switch" :class="[b_switch?'b-switch-on':'']" ></div>
         <ul>
             <template v-for="(item, index) in ary">
                 <ul :key='index'>
