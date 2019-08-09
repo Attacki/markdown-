@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Functional</title>
+</head>
+<body>
+<script>
+
+// 缓存结果示例
+/* 
+    function keeperRunin(){
+        // 执行长时间的任务并返回
+    }
+    var keeper = { 2:3, 4:5 }
+    keeper.hasOwnProperty(ip)?
+        keeper[ip]:
+        keeper[ip] = keeperRunin(ip)
+*/
+
+
+
+// 遍历对象和数组
+const forEach = (array,fn)=>{
+    let i ;
+    for(i=0;i<array.length;i++)
+        fn(array[i])
+}
+const forEachObject = (obj,fn)=>{
+    for(var property in object){
+        if(obj.hasOwnProperty(property)){
+            // 以key和value作为参数调用fn
+            fn(property,obj[property])
+        }
+    }
+}
+/*
+    forEach([1,2,3,4],(data)=>{console.log(data)})
+*/
+
+
+// 如果pre为true,调用fn
+const unless = (pre,fn)=>{
+    if(!!pre){
+        fn()
+    }
+}
+/*
+    forEach([1,2,3,4,5],(number)=>{
+        unless(number % 2,()=>{
+            console.log(number,'is even')
+        })
+    })
+*/
+
+// 对数组或者对象的每一项调用fn(fn返回boolean),有一项为false则返回false
+const every = (obj,fn)=>{
+    let result = true;
+    if(Object.prototype.toString.call(obj) === '[object Array]'){
+        for(let i=0;i<obj.length;i++)
+            result = result && fn(obj[i])
+    }else if(Object.prototype.toString.call(obj) === '[object Object]'){
+        for(const key of obj)
+            result = result && fn(obj[key])
+    }
+    return result
+}
+
+// 对数组或者对象的每一项调用fn,有一项为true则返回true
+const some = (obj, fn)=>{
+    let result = false;
+    if(Object.prototype.toString.call(obj) === '[object Array]'){
+        for(let i=0;i<obj.length;i++)
+            result = result || fn(obj[i])
+    }else if(Object.prototype.toString.call(obj) === '[object Object]'){
+        for(const key of obj)
+            result = result || fn(obj[key])
+    }
+    return result
+}
+/*
+    every([NaN,NaN,NaN],isNaN)  //true
+    every([NaN,NaN,4],isNaN)    //false
+    some([NaN,NaN,4],isNaN)     //true
+    some([1,2,4],isNaN)         //false
+    // every和some函数都是低效的实现,遇到大数组会比较费劲
+*/
+
+/* 根据属性来对数组项进行排序 */
+const sortBy = (property)=>{
+    return (a,b)=>{
+        var result = (a[property]<b[property])?-1:(a[property]>b[property])?1:0
+    }
+}
+/*
+    let people = [
+        {firstname:'aaa',lastname:'ccc'},
+        {firstname:'bbb',lastname:'bbb'},
+        {firstname:'ccc',lastname:'aaa'}
+    ]
+    people.sort(sortBy('firstname'))
+    people.sort(sortBy('lastname'))
+*/
+
+
+// tap(value)(fn) 将value放在fn中执行
+const tap = (value)=>{
+    (fn)=>(
+        typeof(fn) === 'function' && fn(value)
+    )
+}
+    
+/*
+    tap("fun")((it)=>console.log("value is",it))
+    forEach([1,2,3,4,100],(i)=>
+        tap(i)((m)=>console.log(m))
+    )
+*/
+
+// unary函数,接受一个给定的多参数函数,转换为只接受一个参数的函数
+const unary = (fn)=>{
+    return fn.length === 1?
+        fn:(arg)=>fn(arg)
+}
+/*
+    ['1','2','3'].map(unary(parseInt))
+*/
+
+// once 只运行一次给定的函数
+const once = (fn)=>{
+    let done = false;
+    return function(){
+        return done?
+            undefined:
+            ((done=true),fn.apply(this,arguments))
+    }
+}
+/*
+    var doPay = once(()=>{
+        console.log('支付成功')
+    })
+    doPay() //'支付成功'
+    doPay() //undefined
+*/
+
+// memorized 缓存函数
+const memorized = (fn)=>{
+    const lookupTable = {};
+    return (arg) => {
+        return lookupTable[arg] || (lookupTable[arg] = fn(arg));
+    }
+}
+/*
+    let  jiecheng = memorized((n)=>{
+        if(n===0){
+            return 1
+        }
+        return n* jiecheng(n-1)
+    })
+    jiecheng(5)
+    jiecheng(7)
+*/
+// 把通用的问题抽象到一个特别的函数中并重用它们
+
+// map函数 运行fn 并返回一个数组
+const aryUtils={
+    map(ary,fn){
+        let results = []
+        for(const value of ary){
+            results.push(fn(value))
+        }
+        return results
+    },
+    filter(ary,fn){ //filter不能在嵌套的数组上运行
+        let results = []
+        for(const value of ary){
+            fn(value)? results.push(value) : undefined
+        }
+        return results
+    },
+    concatAll(ary,fn){
+        let results = []
+        for(const value of ary){
+            // apply接受的第二个参数就是数组格式
+            results.push.apply(results,value)
+        }
+        return results
+    },
+    reduce(ary,fn,initialValue){
+        let accumlator;
+
+        if(initialValue != undefined){
+            accumlator = initialValue;
+            for(const value of ary)
+                accumlator = fn(accumlator,value)
+        }
+        else{
+            accumlator = ary[0]
+            for(let i=1; i<ary.length;i++)
+                accumlator = fn(accumlator,ary[i])
+        }
+        return [accumlator]
+    },
+    // 将两个数组中对应的项合并,转化为一个数组
+    zip(leftArr,rightArr,fn){
+        let index,results = [];
+        for(index=0;index<Math.min(leftArr.length,rightArr.length);index++)
+            results.push(fn(leftArr[index],rightArr[index]));
+        return results
+    }
+}
+
+const books = [{
+    id:11,
+    title:"c++",
+    author:'le',
+    rating:[4.7],
+    reviews:{good:4,excellent:12},
+    bookDetail:[{
+        id:11,
+        name:"ss",
+        rating:[4.7],
+    },{
+        id:12,
+        name:"ts",
+        rating:[4.3],
+    }]
+},{
+    id:22,
+    title:"c",
+    author:'tt',
+    rating:[4.2],
+    reviews:{good:7,excellent:32},
+    bookDetail:[{
+        id:41,
+        name:"po",
+        rating:[4.6],
+    },{
+        id:42,
+        name:"hq",
+        rating:[4.9],
+    }]
+},{
+    id:33,
+    title:"python",
+    author:'vs',
+    rating:[4.5],
+    reviews:{good:1,excellent:42},
+    bookDetail:[{
+        id:71,
+        name:"6s",
+        rating:[4.7],
+    },{
+        id:72,
+        name:"7s",
+        rating:[4.1],
+    }]
+}]
+/*
+    // 保留书籍的两个属性
+    var mapShadow = aryUtils.map(books,(book)=>{
+        return {title:book.title,author:book.author}
+    })
+    console.log(mapShadow)
+
+    // 筛选评分大于4.5
+    var filterShadow = aryUtils.filter(books,(book)=>book.rating[0]>=4.5)
+    console.log(filterShadow)
+
+    // map和filter及concatAll进行连接
+    var all = aryUtils.filter(
+        aryUtils.concatAll(
+            aryUtils.map(books,(book)=>{
+                return book.bookDetail
+            })
+        ),(book)=>book.rating[0]>=4.5
+    )
+    console.log(all)
+
+    // reduce
+    var useless = [1,2,3,4]
+    var r = aryUtils.reduce(useless,(acc,val)=>acc*val,1)
+    console.log(r)
+*/
+
+// curry 柯里化
+const curry = (fn)=>{
+    if(typeof fn!=='function'){
+        throw Error('No function provided')
+    }
+    return function curriedFn(...args){
+        if(args.length < fn.length){
+            return function(){
+                return curriedFn.apply(null,args.concat(
+                    [].slice.call(arguments)));
+            }
+        }
+        return fn.apply(null,args)
+    }
+}
+/*
+    const genericTable = (x,y)=>x*y
+    const tableOf2 = curry(genericTable)(2)
+    const tableOf3 = curry(genericTable)(3)
+    genericTable(2,2) //等价tableOf2(2)
+*/
+
+// loggerHelper
+const loggerHelper = (mode,initial,error,line)=>{
+    if(mode === 'WARN'){
+        console.warn(initial,error+' at line:' + line)
+    }else if(mode === 'ERROR'){
+        console.error(initial,error+' at line:' + line)
+    }else{
+        throw "wrong mode"
+    }
+}
+let errorLogger = curry(loggerHelper)('ERROR')('index.js报错')
+let warnLogger = curry(loggerHelper)('WARN')('index.js警告')
+/*
+    loggerHelper('ERROR ','index.js报错 ','js引用错误',22)
+*/
+
+// 柯里化实战
+let match = curry(function(expr,str){
+    return str.match(expr)
+})
+let filter = curry(function(f,ary){
+    return ary.filter(f)
+})
+let hasNumber = match(/[0-9]/)
+let findNumberInArray = filter(hasNumber)
+findNumberInArray(['dnf','love7'])//['love7']
+
+// 偏应用
+const partial = function(fn,...partialArgs){
+    let args = partialArgs;
+    return function(...fullArguments){
+        let arg = 0;
+        for(let i=0; i<args.length&&arg<fullArguments.length; i++){
+            if(args[i] === undefined){
+                args[i] = fullArguments[arg++]
+            }
+        }
+        return fn.apply(null, args)
+    }
+}
+let delayTenMs = partial(setTimeout, undefined, 10)
+delayTenMs(()=>console.log('Do Y task'))
+
+// compose组合函数
+const compose = (a,b) =>{
+    (c) => a(b(c))
+}
+let splitIntoSpaces = (str) => str.split(" ")
+let count = (ary) => array.length
+const countWords = compose(splitIntoSpaces,count)
+countWords('love is complicated, and confused') //5
+
+// compose partial 来组合函数
+let projectTitleAndAuthor = (book)=>{
+    return {title:book.title,author:book.author}
+}
+let filterGood = (book) => book.rating[0] > 4.5
+let queryBook = partial(filter,undefined,filterGood)
+let mapTitleAndAuthor = partial(map,undefined,projectTitleAndAuthor)
+let screen = compose(queryBook,mapTitleAndAuthor)
+</script>
+</body>
+</html>
