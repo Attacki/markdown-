@@ -107,11 +107,11 @@ const sortBy = (property)=>{
 
 // tap(value)(fn) 将value放在fn中执行
 const tap = (value)=>{
-    (fn)=>(
+    return (fn)=>(
         typeof(fn) === 'function' && fn(value)
     )
 }
-    
+
 /*
     tap("fun")((it)=>console.log("value is",it))
     forEach([1,2,3,4,100],(i)=>
@@ -147,7 +147,7 @@ const once = (fn)=>{
 
 // memorized 缓存函数
 const memorized = (fn)=>{
-    const lookupTable = {};
+    const lookupTable = {}
     return (arg) => {
         return lookupTable[arg] || (lookupTable[arg] = fn(arg));
     }
@@ -165,51 +165,49 @@ const memorized = (fn)=>{
 // 把通用的问题抽象到一个特别的函数中并重用它们
 
 // map函数 运行fn 并返回一个数组
-const aryUtils={
-    map(ary,fn){
-        let results = []
-        for(const value of ary){
-            results.push(fn(value))
-        }
-        return results
-    },
-    filter(ary,fn){ //filter不能在嵌套的数组上运行
-        let results = []
-        for(const value of ary){
-            fn(value)? results.push(value) : undefined
-        }
-        return results
-    },
-    concatAll(ary,fn){
-        let results = []
-        for(const value of ary){
-            // apply接受的第二个参数就是数组格式
-            results.push.apply(results,value)
-        }
-        return results
-    },
-    reduce(ary,fn,initialValue){
-        let accumlator;
-
-        if(initialValue != undefined){
-            accumlator = initialValue;
-            for(const value of ary)
-                accumlator = fn(accumlator,value)
-        }
-        else{
-            accumlator = ary[0]
-            for(let i=1; i<ary.length;i++)
-                accumlator = fn(accumlator,ary[i])
-        }
-        return [accumlator]
-    },
-    // 将两个数组中对应的项合并,转化为一个数组
-    zip(leftArr,rightArr,fn){
-        let index,results = [];
-        for(index=0;index<Math.min(leftArr.length,rightArr.length);index++)
-            results.push(fn(leftArr[index],rightArr[index]));
-        return results
+function map(ary,fn){
+    let results = []
+    for(const value of ary){
+        results.push(fn(value))
     }
+    return results
+}
+function filter(ary,fn){ //filter不能在嵌套的数组上运行
+    let results = []
+    for(const value of ary){
+        fn(value)? results.push(value) : undefined
+    }
+    return results
+}
+function concatAll(ary,fn){
+    let results = []
+    for(const value of ary){
+        // apply接受的第二个参数就是数组格式
+        results.push.apply(results,value)
+    }
+    return results
+}
+/*** 非常重要的函数 ***/
+function reduce(ary,fn,initialValue){
+    let accumlator;
+
+    if(initialValue != undefined){
+        accumlator = initialValue;
+        for(const value of ary)
+            accumlator = fn(accumlator,value)
+    }else{
+        accumlator = ary[0]
+        for(let i=1; i<ary.length;i++)
+            accumlator = fn(accumlator,ary[i])
+    }
+    return [accumlator]
+}
+// 将两个数组中对应的项合并,转化为一个数组
+function zip(leftArr,rightArr,fn){
+    let index,results = [];
+    for(index=0;index<Math.min(leftArr.length,rightArr.length);index++)
+        results.push(fn(leftArr[index],rightArr[index]));
+    return results
 }
 
 const books = [{
@@ -260,19 +258,19 @@ const books = [{
 }]
 /*
     // 保留书籍的两个属性
-    var mapShadow = aryUtils.map(books,(book)=>{
+    var mapShadow = map(books,(book)=>{
         return {title:book.title,author:book.author}
     })
     console.log(mapShadow)
 
     // 筛选评分大于4.5
-    var filterShadow = aryUtils.filter(books,(book)=>book.rating[0]>=4.5)
+    var filterShadow = filter(books,(book)=>book.rating[0]>=4.5)
     console.log(filterShadow)
 
     // map和filter及concatAll进行连接
-    var all = aryUtils.filter(
-        aryUtils.concatAll(
-            aryUtils.map(books,(book)=>{
+    var all = filter(
+        concatAll(
+            map(books,(book)=>{
                 return book.bookDetail
             })
         ),(book)=>book.rating[0]>=4.5
@@ -281,7 +279,7 @@ const books = [{
 
     // reduce
     var useless = [1,2,3,4]
-    var r = aryUtils.reduce(useless,(acc,val)=>acc*val,1)
+    var r = reduce(useless,(acc,val)=>acc*val,1)
     console.log(r)
 */
 
@@ -327,11 +325,11 @@ let warnLogger = curry(loggerHelper)('WARN')('index.js警告')
 let match = curry(function(expr,str){
     return str.match(expr)
 })
-let filter = curry(function(f,ary){
+let filterNum = curry(function(f,ary){
     return ary.filter(f)
 })
 let hasNumber = match(/[0-9]/)
-let findNumberInArray = filter(hasNumber)
+let findNumberInArray = filterNum(hasNumber)
 findNumberInArray(['dnf','love7'])//['love7']
 
 // 偏应用
@@ -351,11 +349,13 @@ let delayTenMs = partial(setTimeout, undefined, 10)
 delayTenMs(()=>console.log('Do Y task'))
 
 // compose组合函数
-const compose = (a,b) =>{
-    (c) => a(b(c))
+const compose = (...fns) =>{
+    return (value) => {
+        reduce(fns.reverse(),(acc,fn)=>fn(acc),value)
+    }
 }
-let splitIntoSpaces = (str) => str.split(" ")
-let count = (ary) => array.length
+let splitIntoSpaces = (str) => str.split(' ')
+let count = (ary) => ary.length
 const countWords = compose(splitIntoSpaces,count)
 countWords('love is complicated, and confused') //5
 
@@ -367,6 +367,9 @@ let filterGood = (book) => book.rating[0] > 4.5
 let queryBook = partial(filter,undefined,filterGood)
 let mapTitleAndAuthor = partial(map,undefined,projectTitleAndAuthor)
 let screen = compose(queryBook,mapTitleAndAuthor)
+
+
+
 </script>
 </body>
 </html>
