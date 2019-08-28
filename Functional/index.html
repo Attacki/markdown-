@@ -283,6 +283,7 @@ const books = [{
     console.log(r)
 */
 
+/*** 非常重要的函数 ***/
 // curry 柯里化
 const curry = (fn)=>{
     if(typeof fn!=='function'){
@@ -332,6 +333,7 @@ let hasNumber = match(/[0-9]/)
 let findNumberInArray = filterNum(hasNumber)
 findNumberInArray(['dnf','love7'])//['love7']
 
+/*** 非常重要的函数 ***/
 // 偏应用
 const partial = function(fn,...partialArgs){
     let args = partialArgs;
@@ -348,15 +350,19 @@ const partial = function(fn,...partialArgs){
 let delayTenMs = partial(setTimeout, undefined, 10)
 delayTenMs(()=>console.log('Do Y task'))
 
-// compose组合函数
-const compose = (...fns) =>{
-    return (value) => {
+
+// compose组合函数   函数列表是从右到左
+const compose = (...fns) =>
+    (value) =>
         reduce(fns.reverse(),(acc,fn)=>fn(acc),value)
-    }
+
+
+var splitIntoSpaces = (str) => str.split(' ')
+var count = (ary) => {
+    console.log(ary)
+    return ary.length
 }
-let splitIntoSpaces = (str) => str.split(' ')
-let count = (ary) => ary.length
-const countWords = compose(splitIntoSpaces,count)
+var countWords = compose(count,splitIntoSpaces)
 countWords('love is complicated, and confused') //5
 
 // compose partial 来组合函数
@@ -367,6 +373,96 @@ let filterGood = (book) => book.rating[0] > 4.5
 let queryBook = partial(filter,undefined,filterGood)
 let mapTitleAndAuthor = partial(map,undefined,projectTitleAndAuthor)
 let screen = compose(queryBook,mapTitleAndAuthor)
+
+/*** 非常重要的函数 ***/
+// 与compose的区别在于fns的方向是从左到右
+const pipe = (...fns)=>
+    (value)=>
+        reduce(fns,(acc,fn)=>fn(acc),value)
+
+// 用来在可能出现错误的地方打印接收到输入参数
+const identity = (it)=>{
+    console.log(it)
+    return it
+}
+
+// MayBe函子
+const MayBe = function(value){
+    this.value = value
+}
+MayBe.of = function(value){
+    return new MayBe(value)
+}
+MayBe.prototype.isNothing = function(){
+    return (this.value === null || this.value === undefined)
+}
+MayBe.prototype.join = function(fn){
+    return this.isNothing() ? MayBe.of(null):this.value
+}
+MayBe.prototype.chain = function(fn){
+    return this.map(fn).join()
+}
+MayBe.prototype.map = function(fn){
+    return this.isNothing() ? MayBe.of(null):MayBe.of(fn(this.value))
+}
+// 就算传入的值为undefined或者null，可以轻松处理错误
+
+// Either函子
+const Nothing = function(val){
+    this.value = val
+}
+Nothing.of = function(val){
+    return new Nothing(val)
+}
+Nothing.prototype.map = function (f) { 
+    return this
+}
+const Some = function(val){
+    this.value = val
+}
+Some.of = function(val){
+    return new Some(val)
+}
+Some.prototype.map = function (f) { 
+    return Some.of(fn(this.value))
+}
+
+let getTopTen = (url)=>{
+    let response 
+    try{
+        response = Some.of(JSON.parse(request(GET,url).getBody('utf-8')))
+    }catch(err){
+        response = Nothing.of({message:'接口地址出现了一些问题',errorCode:err['statusCode']})
+    }
+    return response
+}
+
+let getData = (url)=>{
+    let response = getTopTen(url)
+    return response.map((arr)=>arr['data'])
+        .map((arr)=>arr['children'])
+        .map((arr)=>Array.map.call(arr,(x)=>{
+            return {
+                title:x['data'].title,
+                url:x['data'].url,
+            }
+        }))
+}
+
+
+
+// 异步代码
+function* gen(){
+    yield 'first'
+    yield 'second'
+    yield 'third'
+}
+
+var generatorResult = gen()
+generatorResult.next().value
+// Generator如同序列，一旦序列中的值被消费，你就不能再次消费它
+// 因此为了能再次消费序列，需要创建另一个Generator实例
+
 
 
 
