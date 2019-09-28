@@ -42,7 +42,7 @@ console.log(Symbol.keyFor(uid3)); // undefined
 ```
 
 ### 符号值的转换
->符号值无法被转换为字符串值或数值。因此将符号作为属性所达成的效果，是其他类型所无法替代的
+> 符号值无法被转换为字符串值或数值。因此将符号作为属性所达成的效果，是其他类型所无法替代的 
 
 ```js
 let uid = Symbol.for("uid"),
@@ -52,8 +52,8 @@ sum = uid / 1; // 引发错误！
 ```
 
 ### 检索符号属性
->Object.keys()与Object.getOwnPropertyNames()方法可以检索对象的所有属性名称,前者返回所有的可枚举属性名称，而后者则返回所有属性名称而无视其是否可枚举。然而两者都不能返回符号类型的属性。
->Object.getOwnPropertySymbols()方法会返回一个数组，包含了对象自有属性名中的符号值
+> Object.keys()与Object.getOwnPropertyNames()方法可以检索对象的所有属性名称,前者返回所有的可枚举属性名称，而后者则返回所有属性名称而无视其是否可枚举。然而两者都不能返回符号类型的属性。
+> Object.getOwnPropertySymbols()方法会返回一个数组，包含了对象自有属性名中的符号值
 
 ```js
 let uid = Symbol.for("uid");
