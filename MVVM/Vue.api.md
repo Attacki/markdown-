@@ -6,8 +6,8 @@
 |属性名|值类型|默认值|作用|
 |:--:|:--|:--|:--|
 |silent|boolean|false|取消 Vue 所有的日志与警告。|
-|optionMergeStrategies|{ [key: string]: Function }|{}|取消 Vue 所有的日志与警告。|
-|devtools|boolean|true(生产版为 false)|取消 Vue 所有的日志与警告。|
+|optionMergeStrategies|{ [key: string]: Function }|{}|自定义合并策略的选项。|
+|devtools|boolean|true(生产版为 false)|配置是否允许 vue-devtools 检查代码。|
 |errorHandler|Function|undefined|指定组件的渲染和观察期间未捕获错误的处理函数。|
 |warnHandler|Function|undefined|为 Vue 的运行时警告赋予一个自定义处理函数|
 |ignoredElements|Array\<string\> \| RegExp>|[]|使 Vue 忽略在 Vue 之外的自定义元素 |

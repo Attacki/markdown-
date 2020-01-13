@@ -190,7 +190,7 @@ module.exports={
                         publicPath:'http://www.beepool.org'    //只有图片加前缀
                     }
                 }],
-                enforce:'pre' // pre/post
+                enforce:'pre'
             }
         ]
     }
